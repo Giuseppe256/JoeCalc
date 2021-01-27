@@ -22,12 +22,15 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Entry Placeholder="0"
+        <Entry x:Name="result"
+               Text=""
+               Placeholder="0"
                Grid.RowSpan="2"
                Grid.ColumnSpan="4"
                HorizontalTextAlignment="End"
+               VerticalTextAlignment="End"
                FontSize="Header"
-               Keyboard="Numeric"/>
+               Keyboard="Numeric" />
 
         <Button Text="C"
                 TextColor="Red"
@@ -38,8 +41,9 @@
                 Clicked="OnParenthesesButtonClicked"
                 Grid.Row="2"
                 Grid.Column="1" />
-        <Button Text="/"
-                Clicked="OnDivideButtonClicked"
+        <Button x:Name="divide"
+                Text="/"
+                Clicked="OnOperatorButtonClicked"
                 Grid.Row="2"
                 Grid.Column="2" />
         <Button Text="&lt;-"
@@ -48,53 +52,56 @@
                 Grid.Column="3" />
 
         <Button Text="7"
-                Clicked="On7ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="3"
                 Grid.Column="0" />
         <Button Text="8"
-                Clicked="On8ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="3"
                 Grid.Column="1" />
         <Button Text="9"
-                Clicked="On9ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="3"
                 Grid.Column="2" />
-        <Button Text="X"
-                Clicked="OnTimesButtonClicked"
+        <Button x:Name="times"
+                Text="X"
+                Clicked="OnOperatorButtonClicked"
                 Grid.Row="3"
                 Grid.Column="3" />
 
         <Button Text="4"
-                Clicked="On4ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="4"
                 Grid.Column="0" />
         <Button Text="5"
-                Clicked="On5ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="4"
                 Grid.Column="1" />
         <Button Text="6"
-                Clicked="On6ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="4"
                 Grid.Column="2" />
-        <Button Text="-"
-                Clicked="OnMinusButtonClicked"
+        <Button x:Name="minus"
+                Text="-"
+                Clicked="OnOperatorButtonClicked"
                 Grid.Row="4"
                 Grid.Column="3" />
 
         <Button Text="1"
-                Clicked="On1ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="5"
                 Grid.Column="0" />
         <Button Text="2"
-                Clicked="On2ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="5"
                 Grid.Column="1" />
         <Button Text="3"
-                Clicked="On3ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="5"
                 Grid.Column="2" />
-        <Button Text="+"
-                Clicked="OnPlusButtonClicked"
+        <Button x:Name="plus"
+                Text="+"
+                Clicked="OnOperatorButtonClicked"
                 Grid.Row="5"
                 Grid.Column="3" />
 
@@ -103,7 +110,7 @@
                 Grid.Row="6"
                 Grid.Column="0" />
         <Button Text="0"
-                Clicked="On0ButtonClicked"
+                Clicked="OnNumButtonClicked"
                 Grid.Row="6"
                 Grid.Column="1" />
         <Button Text="."

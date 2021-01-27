@@ -10,14 +10,62 @@ namespace JoeCalc
 {
     public partial class MainPage : ContentPage
     {
+        //Double value = 0;
+        String operation = "";
+        String operand = "";
+        //bool operationPressed = false;
+        int cursorPosition = 0;
+
         public MainPage()
         {
             InitializeComponent();
+
+            //cursorPosition = result.CursorPosition;
         }
 
         void OnClearButtonClicked(object sender, EventArgs e)
         {
+            result.Text = "";
+        }
 
+        void OnOperatorButtonClicked(object sender, EventArgs e)
+        {
+            Button b = (Button)sender;
+            operation = b.Text;
+            switch (operation)
+            {
+                case "/":
+                    operation = "/";
+                    //result.Text.Insert(result.CursorPosition, " / ");
+                    result.Text += " / ";
+                    break;
+                case "X":
+                    operation = "*";
+                    //result.Text.Insert(result.CursorPosition, " x ");
+                    result.Text += " x ";
+                    break;
+                case "-":
+                    operation = "-";
+                    //result.Text.Insert(result.CursorPosition, " - ");
+                    result.Text += " - ";
+                    break;
+                case "+":
+                    operation = "+";
+                    //result.Text.Insert(result.CursorPosition, " + ");
+                    result.Text += " + ";
+                    break;
+                default:
+                    break;
+            }
+
+            result.CursorPosition += 3;
+            //result.CursorPosition = result.Text.Length;
+
+            operand = "";
+
+            //value = Double.Parse(result.Text);
+            //operationPressed = true;
+            //equation.Text = value + " " + operation;
         }
 
         void OnParenthesesButtonClicked(object sender, EventArgs e)
@@ -35,19 +83,32 @@ namespace JoeCalc
 
         }
 
-        void On7ButtonClicked(object sender, EventArgs e)
+        void OnNumButtonClicked(object sender, EventArgs e)
         {
+            Button b = (Button)sender;
+            if ((result.Text == "") || (result.Text == "0"))
+            {
+                //cursorPosition = 0;
+                result.Text = b.Text;
+                operand = b.Text;
+                result.CursorPosition++;
+            }
+            else
+            {
+                cursorPosition = result.CursorPosition;
+                string str0 = result.Text;
+                string str1 = str0.Substring(0, cursorPosition);
+                string str2 = str0.Substring(cursorPosition);
+                result.Text = str1 + b.Text + str2;
+                operand += b.Text;
+                result.CursorPosition = cursorPosition + 1;
+            }
 
-        }
+            
 
-        void On8ButtonClicked(object sender, EventArgs e)
-        {
-
-        }
-
-        void On9ButtonClicked(object sender, EventArgs e)
-        {
-
+            //result.Focus();
+            //result.Text.Insert(result.CursorPosition, b.Text);
+            //result.Text += b.Text;
         }
 
         void OnTimesButtonClicked(object sender, EventArgs e)
@@ -55,37 +116,7 @@ namespace JoeCalc
 
         }
 
-        void On4ButtonClicked(object sender, EventArgs e)
-        {
-
-        }
-
-        void On5ButtonClicked(object sender, EventArgs e)
-        {
-
-        }
-
-        void On6ButtonClicked(object sender, EventArgs e)
-        {
-
-        }
-
         void OnMinusButtonClicked(object sender, EventArgs e)
-        {
-
-        }
-
-        void On1ButtonClicked(object sender, EventArgs e)
-        {
-
-        }
-
-        void On2ButtonClicked(object sender, EventArgs e)
-        {
-
-        }
-
-        void On3ButtonClicked(object sender, EventArgs e)
         {
 
         }
@@ -96,11 +127,6 @@ namespace JoeCalc
         }
 
         void OnSignButtonClicked(object sender, EventArgs e)
-        {
-
-        }
-
-        void On0ButtonClicked(object sender, EventArgs e)
         {
 
         }
