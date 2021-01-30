@@ -10,16 +10,14 @@ namespace JoeCalc
 {
     public partial class MainPage : ContentPage
     {
-        //Double value = 0;
+        List<Operand> operands = new List<Operand>();
+        Operation op = new Operation();
         String operation = "";
         String operand = "";
-        //bool operationPressed = false;
 
         public MainPage()
         {
             InitializeComponent();
-
-            //cursorPosition = result.CursorPosition;
         }
 
         void OnClearButtonClicked(object sender, EventArgs e)
@@ -38,22 +36,18 @@ namespace JoeCalc
             {
                 case "/":
                     operation = "/";
-                    //result.Text.Insert(result.CursorPosition, " / ");
                     formattedOperator = "/";
                     break;
                 case "X":
                     operation = "*";
-                    //result.Text.Insert(result.CursorPosition, " x ");
                     formattedOperator = "x";
                     break;
                 case "-":
                     operation = "-";
-                    //result.Text.Insert(result.CursorPosition, " - ");
                     formattedOperator = "-";
                     break;
                 case "+":
                     operation = "+";
-                    //result.Text.Insert(result.CursorPosition, " + ");
                     formattedOperator = "+";
                     break;
                 default:
@@ -67,11 +61,7 @@ namespace JoeCalc
             result.Text = str1 + formattedOperator + str2;
             result.CursorPosition = cursorPosition + 1;
             operand = "";
-
-            //result.CursorPosition = result.Text.Length;
-            //value = Double.Parse(result.Text);
-            //operationPressed = true;
-            //equation.Text = value + " " + operation;
+            operands = op.BreakDownOperation(result.Text);
         }
 
         void OnParenthesesButtonClicked(object sender, EventArgs e)
@@ -87,11 +77,13 @@ namespace JoeCalc
             if (str0 == "") { }
             else if (selectionLength > 0)
             {
-                string str1 = str0.Substring(0, cursorPosition);
-                string str2 = str0.Substring(cursorPosition + selectionLength);
+                string str1 = str0.Substring(0, cursorPosition - selectionLength);
+                string str2 = str0.Substring(cursorPosition);
                 str0 = str1 + str2;
                 result.Text = str0;
                 result.CursorPosition = cursorPosition;
+                operands = op.BreakDownOperation(result.Text);
+                operand = op.GetOperand(operands, cursorPosition).Number;
             }
             else
             {
@@ -99,7 +91,10 @@ namespace JoeCalc
                 string str2 = str0.Substring(cursorPosition);
                 str0 = str1 + str2;
                 result.Text = str0;
-                result.CursorPosition = cursorPosition - 1;
+                cursorPosition--;
+                result.CursorPosition = cursorPosition;
+                operands = op.BreakDownOperation(result.Text);
+                operand = op.GetOperand(operands, cursorPosition).Number;
             }
         }
 
@@ -108,7 +103,6 @@ namespace JoeCalc
             Button b = (Button)sender;
             if ((result.Text == "") || (result.Text == "0"))
             {
-                //cursorPosition = 0;
                 result.Text = b.Text;
                 operand = b.Text;
                 result.CursorPosition++;
@@ -123,9 +117,7 @@ namespace JoeCalc
                 operand += b.Text;
                 result.CursorPosition = cursorPosition + 1;
             }
-            //result.Focus();
-            //result.Text.Insert(result.CursorPosition, b.Text);
-            //result.Text += b.Text;
+            operands = op.BreakDownOperation(result.Text);
         }
 
         void OnSignButtonClicked(object sender, EventArgs e)
@@ -136,25 +128,51 @@ namespace JoeCalc
         void OnDotButtonClicked(object sender, EventArgs e)
         {
             if (operand.Contains(".")) { }
-            else if (operand == "")
+            else if (result.Text == "")
             {
-                int cursorPosition = result.CursorPosition;
-                string str0 = result.Text;
-                string str1 = str0.Substring(0, cursorPosition);
-                string str2 = str0.Substring(cursorPosition);
-                result.Text = str1 + "0." + str2;
+                result.Text += "0.";
                 operand += "0.";
-                result.CursorPosition = cursorPosition + 2;
+                result.CursorPosition += 2;
+                operands = op.BreakDownOperation(result.Text);
             }
             else
             {
                 int cursorPosition = result.CursorPosition;
                 string str0 = result.Text;
-                string str1 = str0.Substring(0, cursorPosition);
-                string str2 = str0.Substring(cursorPosition);
-                result.Text = str1 + "." + str2;
-                operand += ".";
-                result.CursorPosition = cursorPosition + 1;
+                Operand currentOperand = op.GetOperand(operands, cursorPosition);
+                string currentNumber;
+                int currentStartPosition;
+                
+                if ((currentOperand == null) || !double.TryParse(currentOperand.Number, out double _))
+                {
+                    currentNumber = "";
+                    currentStartPosition = cursorPosition;
+                }
+                else
+                {
+                    currentNumber = currentOperand.Number;
+                    currentStartPosition = currentOperand.StartPosition;
+                }
+
+                if (currentNumber.Contains(".")) { }
+                else if ((currentNumber == "") || (currentStartPosition == cursorPosition))
+                {
+                    string str1 = str0.Substring(0, cursorPosition);
+                    string str2 = str0.Substring(cursorPosition);
+                    string str3 = str1 + "0." + str2;
+                    result.Text = str3;
+                    operand += "0.";
+                    result.CursorPosition = cursorPosition + 2;
+                }
+                else
+                {
+                    string str1 = str0.Substring(0, cursorPosition);
+                    string str2 = str0.Substring(cursorPosition);
+                    string str3 = str1 + "." + str2;
+                    result.Text = str3;
+                    operand += ".";
+                    result.CursorPosition = cursorPosition + 1;
+                }
             }
         }
 
