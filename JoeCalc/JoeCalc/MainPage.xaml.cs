@@ -114,7 +114,8 @@ namespace JoeCalc
                 string str1 = str0.Substring(0, cursorPosition);
                 string str2 = str0.Substring(cursorPosition);
                 result.Text = str1 + b.Text + str2;
-                operand += b.Text;
+                if (cursorPosition == str0.Length)
+                    operand += b.Text;
                 result.CursorPosition = cursorPosition + 1;
             }
             operands = op.BreakDownOperation(result.Text);
@@ -122,7 +123,51 @@ namespace JoeCalc
 
         void OnSignButtonClicked(object sender, EventArgs e)
         {
+            string str0 = result.Text;
+            int cursorPosition = result.CursorPosition;
 
+            if (str0 == "")
+            {
+                result.Text = "(-";
+                operand = "(-";
+                result.CursorPosition = 2;
+                operands = op.BreakDownOperation(result.Text);
+            }
+            else
+            {
+                Operand currentOperand = op.GetOperand(operands, cursorPosition);
+                if (cursorPosition < str0.Length)
+                    operand = currentOperand.Number;
+                int currentStartPosition = currentOperand.StartPosition;
+                if (operand == "x" || operand == "/" || operand == "+" || operand == "-")
+                {
+                    currentOperand = op.GetOperand(operands, cursorPosition + 1);
+                    operand = currentOperand.Number;
+                    currentStartPosition = currentOperand.StartPosition;
+                }
+
+                if (operand.Contains("-"))
+                {
+                    string str1 = str0.Substring(0, currentStartPosition);
+                    string str2 = str0.Substring(currentStartPosition + 2);
+                    string str3 = str1 + str2;
+                    result.Text = str3;
+                    operand = operand.Remove(0, 2);
+                    cursorPosition -= 2;
+                    result.CursorPosition = cursorPosition;
+                }
+                else
+                {
+                    string str1 = str0.Substring(0, currentStartPosition);
+                    string str2 = str0.Substring(currentStartPosition);
+                    string str3 = str1 + "(-" + str2;
+                    result.Text = str3;
+                    operand = operand.Insert(0, "(-");
+                    cursorPosition += 2;
+                    result.CursorPosition = cursorPosition;
+                }
+                operands = op.BreakDownOperation(result.Text);
+            }
         }
 
         void OnDotButtonClicked(object sender, EventArgs e)

@@ -39,7 +39,13 @@ namespace JoeCalc
             for (int i = 0; i < _inOp.Length; i++)
             {
                 char x = _inOp[i];
-                if (Char.IsNumber(x) || x == '.')
+                char w = '\0';
+                if (x == '-' && _inOp.Length > 1)
+                {
+                    w = _inOp[i - 1];
+                }
+                    
+                if (Char.IsNumber(x) || x == '.' || x == '(' || (x == '-' && w == '('))
                 {
                     if (_currentOperand == "")
                     {
