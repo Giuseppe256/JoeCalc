@@ -40,12 +40,12 @@ namespace JoeCalc
             {
                 char x = _inOp[i];
                 char w = '\0';
-                if (x == '-' && _inOp.Length > 1)
+                if (x == '-' && i > 0)
                 {
                     w = _inOp[i - 1];
                 }
                     
-                if (Char.IsNumber(x) || x == '.' || x == '(' || (x == '-' && w == '('))
+                if (Char.IsNumber(x) || x == '.' || x == '(' || (x == '-' && w == '(') || x == ')')
                 {
                     if (_currentOperand == "")
                     {
@@ -78,6 +78,73 @@ namespace JoeCalc
                 }
             }
             return _operands;
+        }
+
+        public List<Operand> BreakDownSubOps(string inOp)
+        {
+            List<Operand> _subOps = new List<Operand>();
+            _inOp = inOp;
+            string[] _subOperations = new string[_inOp.Length];
+            int _opCount = 0;
+            int _subLevel = 0;
+            _operandCreated = false;
+            _currentStart = 0;
+            _currentOperand = "";
+            _index = 0;
+            for (int i = 0; i < _inOp.Length; i++)
+            {
+                char x = _inOp[i];
+
+                if (x == '(')
+                {
+                    _currentOperand = "(";
+                    for (int j = 0; j <= _subLevel; j++)
+                    {
+                        _subOperations[j] += x;
+                    }
+                    _subLevel++;
+                    _opCount++;
+                }
+                else if (x == ')')
+                {
+                    _currentOperand += x;
+                    for (int j = 0; j <= _subLevel; j++)
+                    {
+                        _subOperations[j] += x;
+                    }
+
+
+                    Operand _operand = new Operand(_currentStart, _currentOperand);
+                    _subOps.Add(_operand);
+                    _index++;
+                    _operandCreated = true;
+                }
+                else
+                {
+                    if (_currentOperand == "")
+                    {
+                        _currentStart = _index;
+                    }
+                    _currentOperand += x;
+                    _index++;
+
+                    if (i == _inOp.Length - 1)
+                    {
+                        Operand _operand = new Operand(_currentStart, _currentOperand);
+                        _subOps.Add(_operand);
+                        _operandCreated = true;
+                    }
+                }
+
+                if (_operandCreated == true)
+                {
+                    _currentOperand = "";
+                    _operandCreated = false;
+                }
+            }
+
+
+            return _subOps;
         }
 
         private string BuildOperation(List<Operand> operands)
