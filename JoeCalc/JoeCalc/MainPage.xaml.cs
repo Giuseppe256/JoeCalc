@@ -15,6 +15,7 @@ namespace JoeCalc
         Operation op = new Operation();
         String operation = "";
         String operand = "";
+        bool equalsPressed = false;
 
         public MainPage()
         {
@@ -23,7 +24,10 @@ namespace JoeCalc
 
         void OnClearButtonClicked(object sender, EventArgs e)
         {
+            result.CursorPosition = 0;
             result.Text = "";
+            result.SetCursor = false;
+            equalsPressed = false;
             runningResult.Text = "";
             operand = "";
             operation = "";
@@ -31,7 +35,12 @@ namespace JoeCalc
 
         void OnOperatorButtonClicked(object sender, EventArgs e)
         {
+            string str0 = result.Text;
             int cursorPosition = result.CursorPosition;
+            if (equalsPressed)
+            {
+                equalsPressed = false;
+            }
             if (cursorPosition > 0)
             {
                 Button b = (Button)sender;
@@ -58,8 +67,7 @@ namespace JoeCalc
                     default:
                         break;
                 }
-
-                string str0 = result.Text;
+                
                 string str1 = str0.Substring(0, cursorPosition);
                 string str2 = str0.Substring(cursorPosition);
                 char before = '\0';
@@ -76,19 +84,19 @@ namespace JoeCalc
                 if (before == 'x' || before == '/' || before == '+' || before == '-')
                 {
                     string str3 = str1.Substring(0, str1.Length - 1);
-                    result.Text = str3 + formattedOperator + str2;
                     result.CursorPosition = cursorPosition;
+                    result.Text = str3 + formattedOperator + str2;
                 }
                 else if (after == 'x' || after == '/' || after == '+' || after == '-')
                 {
                     string str3 = str2.Substring(1);
-                    result.Text = str1 + formattedOperator + str3;
                     result.CursorPosition = cursorPosition + 1;
+                    result.Text = str1 + formattedOperator + str3;
                 }
                 else
                 {
-                    result.Text = str1 + formattedOperator + str2;
                     result.CursorPosition = cursorPosition + 1;
+                    result.Text = str1 + formattedOperator + str2;
                 }
                 operand = "";
                 operands = op.BreakDownOperation(result.Text);
@@ -101,7 +109,14 @@ namespace JoeCalc
             string str0 = result.Text;
             int cursorPosition = result.CursorPosition;
             
-            if (str0.Length > 0 && cursorPosition > 0)
+            if (equalsPressed)
+            {
+                operand = "(";
+                result.CursorPosition = 1;
+                result.Text = "(";
+                equalsPressed = false;
+            }
+            else if (str0.Length > 0 && cursorPosition > 0)
             {
                 char x = str0[cursorPosition - 1];
                 string parenth;
@@ -155,21 +170,21 @@ namespace JoeCalc
                 string str1 = str0.Substring(0, cursorPosition);
                 string str2 = str0.Substring(cursorPosition);
                 string str3 = str1 + parenth + str2;
-                result.Text = str3;
                 operand += parenth;
                 result.CursorPosition = cursorPosition + parenthSize;
+                result.Text = str3;
             }
             else if (cursorPosition == 0)
             {
-                result.Text = "(" + str0;
                 operand = "(" + operand;
                 result.CursorPosition = 1;
+                result.Text = "(" + str0;
             }
             else
             {
                 operand = "(";
-                result.Text = "(";
                 result.CursorPosition = 1;
+                result.Text = "(";
             }
 
             operands = op.BreakDownOperation(result.Text);
@@ -182,15 +197,30 @@ namespace JoeCalc
             int selectionLength = result.SelectionLength;
             string str0 = result.Text;
             if (str0 == "") { }
+            else if (equalsPressed)
+            {
+                result.CursorPosition = 0;
+                result.Text = "";
+                operand = "";
+                equalsPressed = false;
+                operands = op.BreakDownOperation("");
+            }
             else if (selectionLength > 0)
             {
                 string str1 = str0.Substring(0, cursorPosition - selectionLength);
                 string str2 = str0.Substring(cursorPosition);
                 str0 = str1 + str2;
-                result.Text = str0;
                 result.CursorPosition = cursorPosition;
+                result.Text = str0;
                 operands = op.BreakDownOperation(result.Text);
-                operand = op.GetOperand(operands, cursorPosition).Number;
+                if (operands.Count > 0)
+                {
+                    operand = op.GetOperand(operands, cursorPosition).Number;
+                }
+                else
+                {
+                    operand = "";
+                }
                 UpdateRunningResult();
             }
             else
@@ -198,11 +228,18 @@ namespace JoeCalc
                 string str1 = str0.Substring(0, cursorPosition - 1);
                 string str2 = str0.Substring(cursorPosition);
                 str0 = str1 + str2;
-                result.Text = str0;
                 cursorPosition--;
                 result.CursorPosition = cursorPosition;
+                result.Text = str0;
                 operands = op.BreakDownOperation(result.Text);
-                operand = op.GetOperand(operands, cursorPosition).Number;
+                if (operands.Count > 0)
+                {
+                    operand = op.GetOperand(operands, cursorPosition).Number;
+                }
+                else
+                {
+                    operand = "";
+                }
                 UpdateRunningResult();
             }
         }
@@ -210,24 +247,32 @@ namespace JoeCalc
         void OnNumButtonClicked(object sender, EventArgs e)
         {
             Button b = (Button)sender;
-            if ((result.Text == "") || (result.Text == "0"))
+            if ((result.Text == "") || (result.Text == "0") || equalsPressed)
             {
-                result.Text = b.Text;
                 operand = b.Text;
-                result.CursorPosition++;
+                result.CursorPosition = 1;
+                equalsPressed = false;
+                result.Text = b.Text;
             }
             else
             {
                 int cursorPosition = result.CursorPosition;
+                result.CursorPosition = cursorPosition + 1;
                 string str0 = result.Text;
                 string str1 = str0.Substring(0, cursorPosition);
                 string str2 = str0.Substring(cursorPosition);
+                char before = '\0';
                 char after = '\0';
+                if (str1.Length > 0)
+                {
+                    before = str1[str1.Length - 1];
+                }
                 if (str2.Length > 0)
                 {
                     after = str2[0];
                 }
-                if (str1[str1.Length - 1] == ')')
+
+                if (before == ')')
                 {
                     result.Text = str1 + 'x' + b.Text + str2;
                 }
@@ -242,7 +287,7 @@ namespace JoeCalc
                 
                 if (cursorPosition == str0.Length)
                     operand += b.Text;
-                result.CursorPosition = cursorPosition + 1;
+                
             }
             operands = op.BreakDownOperation(result.Text);
             UpdateRunningResult();
@@ -254,53 +299,77 @@ namespace JoeCalc
             string str0 = result.Text;
             int cursorPosition = result.CursorPosition;
 
-            if (str0 == "")     // If Result is Empty
+            if (str0 == "" || equalsPressed)     // If Result is Empty
             {
-                result.Text = "(-";    
                 operand = "(-";    
-                result.CursorPosition = 2;     
+                result.CursorPosition = 2;
+                equalsPressed = false;
+                result.Text = "(-";
                 operands = op.BreakDownOperation(result.Text);
             }
             else  // If Result is Not Empty
             {
-                Operand currentOperand = op.GetOperand(operands, cursorPosition);         
-                if (cursorPosition < str0.Length)       // If Cursor is not at the end
-                    operand = currentOperand.Number;    // Set operand to current operand
+                operands = op.BreakDownOperation(str0);
+                Operand currentOperand = op.GetOperand(operands, cursorPosition);
+                operand = currentOperand.Number;
+                //if (cursorPosition < str0.Length)       // If Cursor is not at the end
+                //    operand = currentOperand.Number;    // Set operand to current operand
                 int currentStartPosition = currentOperand.StartPosition;        // Set start postion to current operand's start
                 if (operand == "x" || operand == "/" || operand == "+" || operand == "-")   // If operand is an operator
-                {                                                                           // 
-                    currentOperand = op.GetOperand(operands, cursorPosition + 1);
-                    operand = currentOperand.Number;
-                    currentStartPosition = currentOperand.StartPosition;
+                {                                     
+                    if (cursorPosition == str0.Length)
+                    {
+                        currentOperand.Number = "";
+                        operand = "";
+                        currentStartPosition = cursorPosition;
+                    }
+                    else
+                    {
+                        currentOperand = op.GetOperand(operands, cursorPosition + 1);
+                        operand = currentOperand.Number;
+                        currentStartPosition = currentOperand.StartPosition;
+                    }
                 }
 
                 if (operand.Contains("-"))
                 {
                     string str1 = str0.Substring(0, currentStartPosition);
-                    string str2 = str0.Substring(currentStartPosition + 2);
+                    string str2;
+                    if (str0.Length >= currentStartPosition + 2)
+                    {
+                        str2 = str0.Substring(currentStartPosition + 2);
+                    }
+                    else if (str0.Length == currentStartPosition + 1)
+                    {
+                        str2 = str0.Substring(currentStartPosition + 1);
+                    }
+                    else
+                    {
+                        str2 = str0.Substring(currentStartPosition);
+                    }
                     string str3 = str1 + str2;
-                    result.Text = str3;
                     operand = operand.Remove(0, 2);
                     cursorPosition -= 2;
                     result.CursorPosition = cursorPosition;
+                    result.Text = str3;
                 }
                 else if (operand == "" && cursorPosition == str0.Length)
                 {
                     string str1 = str0 + "(-";
-                    result.Text = str1;
                     operand = "(-";
                     cursorPosition += 2;
                     result.CursorPosition = cursorPosition;
+                    result.Text = str1;
                 }
                 else
                 {
                     string str1 = str0.Substring(0, currentStartPosition);
                     string str2 = str0.Substring(currentStartPosition);
                     string str3 = str1 + "(-" + str2;
-                    result.Text = str3;
                     operand = operand.Insert(0, "(-");
                     cursorPosition += 2;
                     result.CursorPosition = cursorPosition;
+                    result.Text = str3;
                 }
                 operands = op.BreakDownOperation(result.Text);
                 UpdateRunningResult();
@@ -310,17 +379,18 @@ namespace JoeCalc
         void OnDotButtonClicked(object sender, EventArgs e)
         {
             if (operand.Contains(".")) { }
-            else if (result.Text == "")
+            else if (result.Text == "" || equalsPressed)
             {
-                result.Text += "0.";
-                operand += "0.";
-                result.CursorPosition += 2;
+                result.CursorPosition = 2;
+                result.Text = "0.";
+                operand = "0.";
+                equalsPressed = false;
                 operands = op.BreakDownOperation(result.Text);
             }
             else
             {
-                int cursorPosition = result.CursorPosition;
                 string str0 = result.Text;
+                int cursorPosition = result.CursorPosition;
                 Operand currentOperand = op.GetOperand(operands, cursorPosition);
                 string currentNumber;
                 int currentStartPosition;
@@ -342,9 +412,9 @@ namespace JoeCalc
                     string str1 = str0.Substring(0, cursorPosition);
                     string str2 = str0.Substring(cursorPosition);
                     string str3 = str1 + "0." + str2;
-                    result.Text = str3;
                     operand += "0.";
                     result.CursorPosition = cursorPosition + 2;
+                    result.Text = str3;
                     operands = op.BreakDownOperation(result.Text);
                     UpdateRunningResult();
                 }
@@ -353,9 +423,9 @@ namespace JoeCalc
                     string str1 = str0.Substring(0, cursorPosition);
                     string str2 = str0.Substring(cursorPosition);
                     string str3 = str1 + "." + str2;
-                    result.Text = str3;
                     operand += ".";
                     result.CursorPosition = cursorPosition + 1;
+                    result.Text = str3;
                     operands = op.BreakDownOperation(result.Text);
                     UpdateRunningResult();
                 }
@@ -364,7 +434,7 @@ namespace JoeCalc
 
         void OnEqualsButtonClicked(object sender, EventArgs e)
         {
-            DataTable dt = new DataTable();
+            ResultWithBool resultWithBool = new ResultWithBool("", false);
             string equation = result.Text;
             
             if (equation != "" && (Char.IsNumber(equation[equation.Length - 1]) || equation[equation.Length - 1] == ')'))
@@ -384,6 +454,97 @@ namespace JoeCalc
                     {
                         closedCount++;
                     }
+
+                    if (i < equation.Length - 1 && Char.IsNumber(equation[i]))
+                    {
+                        if (equation[i + 1] == '(')
+                        {
+                            string str1 = equation.Substring(0, i + 1);
+                            string str2 = equation.Substring(i + 1);
+                            equation = str1 + '*' + str2;
+                        }
+                    }
+                    if (i > 0 && Char.IsNumber(equation[i]))
+                    {
+                        if (equation[i - 1] == ')')
+                        {
+                            string str1 = equation.Substring(0, i);
+                            string str2 = equation.Substring(i);
+                            equation = str1 + '*' + str2;
+                        }
+                    }
+                }
+
+                int missingClosed = openCount - closedCount;
+
+                for (int i = 0; i < missingClosed; i++)
+                {
+                    equation += ")";
+                }
+
+                operands = op.BreakDownOperation(equation);
+                resultWithBool = op.SolveOperation(operands);
+                string answer = resultWithBool.Result;
+
+                if (resultWithBool.Error)
+                {
+                    runningResult.Text = answer;
+                }
+                else
+                {
+                    operand = answer;
+                    operation = "";
+                    runningResult.Text = "";
+                    equalsPressed = true;
+                    result.CursorPosition = answer.Length;
+                    result.Text = answer;
+                }
+            }
+            else
+            {
+                runningResult.Text = "Invalid format";
+            }
+
+            /*
+            DataTable dt = new DataTable();
+            string equation = result.Text;
+
+            if (equation != "" && (Char.IsNumber(equation[equation.Length - 1]) || equation[equation.Length - 1] == ')'))
+            {
+                equation = equation.Replace("x", "*");
+
+                int openCount = 0;
+                int closedCount = 0;
+
+                for (int i = 0; i < equation.Length; i++)
+                {
+                    if (equation[i] == '(')
+                    {
+                        openCount++;
+                    }
+                    else if (equation[i] == ')')
+                    {
+                        closedCount++;
+                    }
+
+                    if (i < equation.Length - 1 && Char.IsNumber(equation[i]))
+                    {
+                        if (equation[i + 1] == '(')
+                        {
+                            string str1 = equation.Substring(0, i + 1);
+                            string str2 = equation.Substring(i + 1);
+                            equation = str1 + '*' + str2;
+                        }
+                    }
+                    if (i > 0 && Char.IsNumber(equation[i]))
+                    {
+                        if (equation[i - 1] == ')')
+                        {
+                            string str1 = equation.Substring(0, i);
+                            string str2 = equation.Substring(i);
+                            equation = str1 + '*' + str2;
+                        }
+                    }
                 }
 
                 int missingClosed = openCount - closedCount;
@@ -402,22 +563,93 @@ namespace JoeCalc
                 }
                 else
                 {
-                    result.Text = answer;
                     operand = answer;
                     operation = "";
                     runningResult.Text = "";
                     result.CursorPosition = answer.Length;
+                    result.Text = answer;
                 }
             }
             else
             {
                 runningResult.Text = "Invalid format";
             }
-            
+            */
         }
 
         void UpdateRunningResult()
         {
+            ResultWithBool resultWithBool = new ResultWithBool("", false);
+            string equation = result.Text;
+            operands = op.BreakDownOperation(equation);
+            char endChar = '\0';
+            if (equation != "")
+            {
+                endChar = equation[equation.Length - 1];
+            }
+            if (operands.Count > 2 && (Char.IsNumber(endChar) || endChar == ')'))
+            {
+                equation = equation.Replace("x", "*");
+
+                int openCount = 0;
+                int closedCount = 0;
+
+                for (int i = 0; i < equation.Length; i++)
+                {
+                    if (equation[i] == '(')
+                    {
+                        openCount++;
+                    }
+                    else if (equation[i] == ')')
+                    {
+                        closedCount++;
+                    }
+
+                    if (i < equation.Length - 1 && Char.IsNumber(equation[i]))
+                    {
+                        if (equation[i + 1] == '(')
+                        {
+                            string str1 = equation.Substring(0, i + 1);
+                            string str2 = equation.Substring(i + 1);
+                            equation = str1 + '*' + str2;
+                        }
+                    }
+                    if (i > 0 && Char.IsNumber(equation[i]))
+                    {
+                        if (equation[i - 1] == ')')
+                        {
+                            string str1 = equation.Substring(0, i);
+                            string str2 = equation.Substring(i);
+                            equation = str1 + '*' + str2;
+                        }
+                    }
+                }
+
+                int missingClosed = openCount - closedCount;
+
+                for (int i = 0; i < missingClosed; i++)
+                {
+                    equation += ")";
+                }
+
+                operands = op.BreakDownOperation(equation);
+                resultWithBool = op.SolveOperation(operands);
+
+                if (resultWithBool.Error)
+                {
+                    runningResult.Text = "";
+                }
+                else
+                {
+                    runningResult.Text = resultWithBool.Result;
+                }
+            }
+            else
+            {
+                runningResult.Text = "";
+            }
+
+            /*
             DataTable dt = new DataTable();
             string equation = result.Text;
             operands = op.BreakDownOperation(equation);
@@ -443,6 +675,25 @@ namespace JoeCalc
                     {
                         closedCount++;
                     }
+
+                    if (i < equation.Length - 1 && Char.IsNumber(equation[i]))
+                    {
+                        if (equation[i + 1] == '(')
+                        {
+                            string str1 = equation.Substring(0, i + 1);
+                            string str2 = equation.Substring(i + 1);
+                            equation = str1 + '*' + str2;
+                        }
+                    }
+                    if (i > 0 && Char.IsNumber(equation[i]))
+                    {
+                        if (equation[i - 1] == ')')
+                        {
+                            string str1 = equation.Substring(0, i);
+                            string str2 = equation.Substring(i);
+                            equation = str1 + '*' + str2;
+                        }
+                    }
                 }
 
                 int missingClosed = openCount - closedCount;
@@ -452,8 +703,11 @@ namespace JoeCalc
                     equation += ")";
                 }
 
+                equation += "+0.0";
 
-                var answerObject = dt.Compute(equation, "");
+
+
+                object answerObject = dt.Compute(equation, "");
                 string answer = answerObject.ToString();
                 if (answer == "Infinity")
                 {
@@ -468,6 +722,13 @@ namespace JoeCalc
             {
                 runningResult.Text = "";
             }
+            */
+        }
+
+        void OnTestButtonClicked(object sender, EventArgs e)
+        {
+            string message = "Can't enter more than 15 digits";
+            DependencyService.Get<IMessage>().ShortAlert(message);
         }
     }
 }
