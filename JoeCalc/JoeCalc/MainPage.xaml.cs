@@ -6,12 +6,60 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
+using System.Collections.ObjectModel;
 
 namespace JoeCalc
 {
     public partial class MainPage : ContentPage
     {
         List<Operand> operands = new List<Operand>();
+        
+        public static HistoryEntry testEquation = new HistoryEntry()
+        {
+            equation = "5 + 7",
+            isResult = false
+        };
+        public static HistoryEntry testResult = new HistoryEntry()
+        {
+            equation = "12",
+            isResult = true
+        };
+
+        ObservableCollection<HistoryEntry> _HistoryList = new ObservableCollection<HistoryEntry>();
+        public ObservableCollection<HistoryEntry> HistoryList { get { return _HistoryList; } }
+
+        public void HistoryListPage()
+        {
+            historyBox.ItemsSource = _HistoryList;
+
+            // ObservableCollection allows items to be added after ItemsSource
+            // is set and the UI will react to changes
+            _HistoryList.Add(new HistoryEntry { equation = "5 + 7", isResult = false });
+            _HistoryList.Add(new HistoryEntry { equation = "12", isResult = true });
+        }
+
+        //private IList<HistoryEntry> HistoryList = new List<HistoryEntry>()
+        //{
+        //    testEquation,
+        //    testResult
+        //};
+        //private ObservableCollection<HistoryEntry> _HistoryList;
+
+        //public ObservableCollection<HistoryEntry> HistoryList {
+        //    get
+        //    {
+        //        return _HistoryList ?? _HistoryList == new ObservableCollection<HistoryEntry>;
+        //    }
+        //    set
+        //    {
+        //        if (_HistoryList != value)
+        //        {
+        //            _HistoryList = value;
+        //            //SetPropertyChanged();
+        //        }
+        //    }
+        //}
+
         Operation op = new Operation();
         String operation = "";
         String operand = "";
@@ -20,6 +68,7 @@ namespace JoeCalc
         public MainPage()
         {
             InitializeComponent();
+            BindingContext = new ViewModels.HistoryViewModel();
         }
 
         void OnClearButtonClicked(object sender, EventArgs e)
@@ -488,7 +537,8 @@ namespace JoeCalc
 
                 if (resultWithBool.Error)
                 {
-                    runningResult.Text = answer;
+                    DependencyService.Get<IMessage>().ShortAlert(answer);
+                    runningResult.Text = "";
                 }
                 else
                 {
@@ -498,83 +548,26 @@ namespace JoeCalc
                     equalsPressed = true;
                     result.CursorPosition = answer.Length;
                     result.Text = answer;
+                    HistoryEntry historyEquation = new HistoryEntry()
+                    {
+                        equation = equation,
+                        isResult = false
+                    };
+                    HistoryList.Add(historyEquation);
+                    HistoryEntry historyResult = new HistoryEntry()
+                    {
+                        equation = answer,
+                        isResult = true
+                    };
+                    HistoryList.Add(historyResult);
                 }
             }
             else
             {
-                runningResult.Text = "Invalid format";
+                string errorMsg = "Invalid format";
+                DependencyService.Get<IMessage>().ShortAlert(errorMsg);
+                runningResult.Text = "";
             }
-
-            /*
-            DataTable dt = new DataTable();
-            string equation = result.Text;
-
-            if (equation != "" && (Char.IsNumber(equation[equation.Length - 1]) || equation[equation.Length - 1] == ')'))
-            {
-                equation = equation.Replace("x", "*");
-
-                int openCount = 0;
-                int closedCount = 0;
-
-                for (int i = 0; i < equation.Length; i++)
-                {
-                    if (equation[i] == '(')
-                    {
-                        openCount++;
-                    }
-                    else if (equation[i] == ')')
-                    {
-                        closedCount++;
-                    }
-
-                    if (i < equation.Length - 1 && Char.IsNumber(equation[i]))
-                    {
-                        if (equation[i + 1] == '(')
-                        {
-                            string str1 = equation.Substring(0, i + 1);
-                            string str2 = equation.Substring(i + 1);
-                            equation = str1 + '*' + str2;
-                        }
-                    }
-                    if (i > 0 && Char.IsNumber(equation[i]))
-                    {
-                        if (equation[i - 1] == ')')
-                        {
-                            string str1 = equation.Substring(0, i);
-                            string str2 = equation.Substring(i);
-                            equation = str1 + '*' + str2;
-                        }
-                    }
-                }
-
-                int missingClosed = openCount - closedCount;
-
-                for (int i = 0; i < missingClosed; i++)
-                {
-                    equation += ")";
-                }
-
-
-                var answerObject = dt.Compute(equation, "");
-                string answer = answerObject.ToString();
-                if (answer == "Infinity")
-                {
-                    runningResult.Text = "Can't divide by zero";
-                }
-                else
-                {
-                    operand = answer;
-                    operation = "";
-                    runningResult.Text = "";
-                    result.CursorPosition = answer.Length;
-                    result.Text = answer;
-                }
-            }
-            else
-            {
-                runningResult.Text = "Invalid format";
-            }
-            */
         }
 
         void UpdateRunningResult()
@@ -648,81 +641,18 @@ namespace JoeCalc
             {
                 runningResult.Text = "";
             }
+        }
 
-            /*
-            DataTable dt = new DataTable();
-            string equation = result.Text;
-            operands = op.BreakDownOperation(equation);
-            char endChar = '\0';
-            if (equation != "")
+        void OnHistoryButtonClicked(object sender, EventArgs e)
+        {
+            if (historyBox.IsVisible)
             {
-                endChar = equation[equation.Length - 1];
-            }
-            if (operands.Count > 2 && (Char.IsNumber(endChar) || endChar == ')'))
-            {
-                equation = equation.Replace("x", "*");
-
-                int openCount = 0;
-                int closedCount = 0;
-
-                for (int i = 0; i < equation.Length; i++)
-                {
-                    if (equation[i] == '(')
-                    {
-                        openCount++;
-                    }
-                    else if (equation[i] == ')')
-                    {
-                        closedCount++;
-                    }
-
-                    if (i < equation.Length - 1 && Char.IsNumber(equation[i]))
-                    {
-                        if (equation[i + 1] == '(')
-                        {
-                            string str1 = equation.Substring(0, i + 1);
-                            string str2 = equation.Substring(i + 1);
-                            equation = str1 + '*' + str2;
-                        }
-                    }
-                    if (i > 0 && Char.IsNumber(equation[i]))
-                    {
-                        if (equation[i - 1] == ')')
-                        {
-                            string str1 = equation.Substring(0, i);
-                            string str2 = equation.Substring(i);
-                            equation = str1 + '*' + str2;
-                        }
-                    }
-                }
-
-                int missingClosed = openCount - closedCount;
-
-                for (int i = 0; i < missingClosed; i++)
-                {
-                    equation += ")";
-                }
-
-                equation += "+0.0";
-
-
-
-                object answerObject = dt.Compute(equation, "");
-                string answer = answerObject.ToString();
-                if (answer == "Infinity")
-                {
-                    runningResult.Text = "";
-                }
-                else
-                {
-                    runningResult.Text = answer;
-                }
+                historyBox.IsVisible = false;
             }
             else
             {
-                runningResult.Text = "";
+                historyBox.IsVisible = true;
             }
-            */
         }
 
         void OnTestButtonClicked(object sender, EventArgs e)
